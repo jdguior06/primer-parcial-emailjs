@@ -1,0 +1,121 @@
+========================================================
+PROMPT PARA CREAR EL SERVIDOR NODE.JS DE CALLBACK
+========================================================
+
+Crea un servidor Node.js con Express llamado "pagofacil-callback"
+en un directorio nuevo. El servidor recibe notificaciones de pago
+de la pasarela PagoFacil y actualiza una base de datos PostgreSQL.
+
+--------------------------------------------------------------
+CONTEXTO
+--------------------------------------------------------------
+- La pasarela PagoFacil Bolivia envía un POST a este servidor
+  cuando un cliente completa (o falla) un pago con QR.
+- El servidor debe actualizar el campo "estado_pago" en la tabla
+  "Pago" de la base de datos PostgreSQL usando el "PedidoID" que
+  corresponde al campo "id" de esa tabla.
+- Responder siempre con JSON {error:0, status:1, message:"...", values:true}
+  para que PagoFacil confirme la recepción.
+
+--------------------------------------------------------------
+CONFIGURACIÓN DE LA BASE DE DATOS
+--------------------------------------------------------------
+Host     : www.tecnoweb13sa.online
+Port     : 5432
+Database : db_grupo13sa
+User     : grupo13sa
+Password : grupo13sagrupo13sa
+
+--------------------------------------------------------------
+TABLA QUE SE ACTUALIZA
+--------------------------------------------------------------
+Tabla  : Pago
+SQL    : UPDATE Pago
+           SET estado_pago = $1,
+               actualizado_en = CURRENT_TIMESTAMP
+         WHERE id = $2
+
+Valores del campo "Estado" que envía PagoFacil:
+  1 = pendiente
+  2 = pagado
+  3 = revertido
+  4 = anulado
+
+Mapeo estado numérico → texto para estado_pago:
+  1 → 'pendiente'
+  2 → 'pagado'
+  3 → 'revertido'
+  4 → 'anulado'
+
+--------------------------------------------------------------
+ENDPOINT REQUERIDO
+--------------------------------------------------------------
+POST /callback
+
+Body JSON que envía PagoFacil:
+{
+  "PedidoID": "15",        <- id del Pago en nuestra BD
+  "Fecha": "2025-01-15",
+  "Hora": "14:30:00",
+  "MetodoPago": 4,
+  "Estado": 2              <- ver tabla de estados arriba
+}
+
+Respuesta que debe devolver el servidor (HTTP 200):
+{
+  "error": 0,
+  "status": 1,
+  "message": "Pago actualizado correctamente.",
+  "values": true
+}
+
+Si el PedidoID no existe en la BD, responder igualmente con
+HTTP 200 y values:false para no bloquear el proceso de PagoFacil.
+
+--------------------------------------------------------------
+ENDPOINT DE SALUD (opcional pero recomendado)
+--------------------------------------------------------------
+GET /health
+Respuesta: { "status": "ok" }
+
+--------------------------------------------------------------
+DEPENDENCIAS
+--------------------------------------------------------------
+- express
+- pg (node-postgres)
+- dotenv (para las variables de entorno)
+
+--------------------------------------------------------------
+ESTRUCTURA DE ARCHIVOS ESPERADA
+--------------------------------------------------------------
+pagofacil-callback/
+├── src/
+│   └── server.js      <- servidor principal
+├── .env               <- variables de entorno (NO subir a git)
+├── .env.example       <- plantilla sin valores reales
+├── package.json
+└── README.md (opcional)
+
+--------------------------------------------------------------
+VARIABLES DE ENTORNO (.env)
+--------------------------------------------------------------
+PORT=3000
+DB_HOST=www.tecnoweb13sa.online
+DB_PORT=5432
+DB_NAME=db_grupo13sa
+DB_USER=grupo13sa
+DB_PASSWORD=grupo13sagrupo13sa
+
+--------------------------------------------------------------
+NOTAS ADICIONALES
+--------------------------------------------------------------
+1. El servidor debe escuchar en el puerto definido en .env (default 3000).
+2. Agregar middleware express.json() para parsear el body.
+3. Loguear en consola cada callback recibido con PedidoID y Estado.
+4. El campo "PedidoID" puede llegar como string o número; convertirlo
+   a entero antes de usarlo en la query.
+5. Una vez desplegado, actualizar en el proyecto Java el valor de
+   Constantes.PAGOFACIL_CALLBACK_URL con la URL pública del servidor
+   (ej: https://mi-servidor.com/callback).
+
+========================================================

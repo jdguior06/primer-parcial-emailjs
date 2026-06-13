@@ -1,0 +1,174 @@
+{
+  "info": {
+    "_postman_id": "c11c6b80-dcb6-4290-975d-aea0bc1bb846",
+    "name": "MasterQR Copy",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "29992119"
+  },
+  "item": [
+    {
+      "name": "/login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "tcTokenService",
+            "value": "",
+            "type": "text"
+          },
+          {
+            "key": "tcTokenSecret",
+            "value": "",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://masterqr.pagofacil.com.bo/api/services/v2/login",
+          "protocol": "https",
+          "host": [
+            "masterqr",
+            "pagofacil",
+            "com",
+            "bo"
+          ],
+          "path": [
+            "api",
+            "services",
+            "v2",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/list-enabled-services",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbWFzdGVycXIucGFnb2ZhY2lsLmNvbS5iby9hcGkvc2VydmljZXMvdjIvbG9naW4iLCJpYXQiOjE3Nzk2MjYyOTYsImV4cCI6MTc3OTY4MTYwMCwibmJmIjoxNzc5NjI2Mjk2LCJqdGkiOiI5OXFKNExJRDlueEV1cUNnIiwic3ViIjoiNDciLCJwcnYiOiJlZTMwYTE1M2VhZTA0ZTczZjc5NDA2MzlkYTYwMzRiNzEzOTQ5YmE1In0.n-g1uHkLPIMZ-swhJMAoWiXnWLrTpk8WQJDnJtAxQfs",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "https://masterqr.pagofacil.com.bo/api/services/v2/list-enabled-services",
+          "protocol": "https",
+          "host": [
+            "masterqr",
+            "pagofacil",
+            "com",
+            "bo"
+          ],
+          "path": [
+            "api",
+            "services",
+            "v2",
+            "list-enabled-services"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/generate-qr",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL3NlcnZpY2VzL3YyL2xvZ2luIiwiaWF0IjoxNzc5Mzk4MjA5LCJleHAiOjE3Nzk0MjI0MDAsIm5iZiI6MTc3OTM5ODIwOSwianRpIjoiM2RVeXlsa3dKOEdHMHJoUiIsInN1YiI6IjQ3IiwicHJ2IjoiZWUzMGExNTNlYWUwNGU3M2Y3OTQwNjM5ZGE2MDM0YjcxMzk0OWJhNSIsInRva2VuX3NlcmlhbCI6Mn0.0tLwNUQ_EzteUT6xLh2Xu9pYkWoaYRtqVfJ8qZNSByA",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"paymentMethod\": 34,\r\n    \"clientName\": \"Jhon Doe\",\r\n    \"documentType\": 1,\r\n    \"documentId\": \"123456\",\r\n    \"phoneNumber\": \"75540850\",\r\n    \"email\": \"mario.herbas@pagofacil.com.bo\",\r\n    // UUID; SERIAL; JMH-01\r\n    \"paymentNumber\": \"2026050210809\",// <-IMPORTANTE\r\n    \"amount\": 0.1,\r\n    \"currency\": 2, // <- 2: BOB\r\n    \"clientCode\": \"11001\", // <-ID Cliente\r\n    \"callbackUrl\": \"https://tu-dominio.com/callback\",\r\n    \"orderDetail\": [\r\n        {\r\n            \"serial\": 1,\r\n            \"product\": \"Detalle_Item\",\r\n            \"quantity\": 1,\r\n            \"price\": 0.1,\r\n            \"discount\": 0,\r\n            \"total\": 0.1\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://masterqr.pagofacil.com.bo/api/services/v2/generate-qr",
+          "protocol": "https",
+          "host": [
+            "masterqr",
+            "pagofacil",
+            "com",
+            "bo"
+          ],
+          "path": [
+            "api",
+            "services",
+            "v2",
+            "generate-qr"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "/query-transaction",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgwMDAvYXBpL3NlcnZpY2VzL3YyL2xvZ2luIiwiaWF0IjoxNzc5MzkwNzMwLCJleHAiOjE3Nzk0MjI0MDAsIm5iZiI6MTc3OTM5MDczMCwianRpIjoia2VCVmgyNjc0TmZmQ29GQSIsInN1YiI6IjQ3IiwicHJ2IjoiZWUzMGExNTNlYWUwNGU3M2Y3OTQwNjM5ZGE2MDM0YjcxMzk0OWJhNSIsInRva2VuX3NlcmlhbCI6MX0.lcSpOfvfK9gRPU_FQYqwtIns9AIr7NRCoEwTn-RNelc",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"pagofacilTransactionId\": 9533560\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://masterqr.pagofacil.com.bo/api/services/v2/query-transaction",
+          "protocol": "https",
+          "host": [
+            "masterqr",
+            "pagofacil",
+            "com",
+            "bo"
+          ],
+          "path": [
+            "api",
+            "services",
+            "v2",
+            "query-transaction"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
