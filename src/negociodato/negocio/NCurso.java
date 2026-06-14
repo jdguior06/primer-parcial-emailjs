@@ -1,51 +1,36 @@
 package negociodato.negocio;
 
 import negociodato.dato.DCurso;
-import negociodato.dato.DTipoCurso;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NCurso {
 
-    private final DCurso     dCurso;
-    private final DTipoCurso dTipoCurso;
+    private final DCurso dCurso;
 
     public NCurso() {
-        this.dCurso     = new DCurso();
-        this.dTipoCurso = new DTipoCurso();
+        this.dCurso = new DCurso();
     }
 
-    /**
-     * INSCUR["fecha_ini","fecha_fin","precio","estado","id_instructor","id_vehiculo","nombre_tipo_curso","id_franja"]
-     * fecha_ini / fecha_fin: YYYY-MM-DD
-     * id_instructor, id_vehiculo, id_franja: enteros (obtenidos con LISUSU, LISVEH, LISFRA)
-     * nombre_tipo_curso: resuelto por nombre (usar LISTCU para ver disponibles)
-     */
+    // INSCUR["fecha_ini","fecha_fin","precio","estado","id_instructor","id_vehiculo","id_tipo_curso","id_franja"]
     public void guardar(List<String> parametros) throws SQLException {
         validar(parametros, 8,
             "fecha_inicio (YYYY-MM-DD)", "fecha_fin (YYYY-MM-DD)", "precio",
             "estado", "id_instructor", "id_vehiculo",
-            "nombre_tipo_curso", "id_franja");
+            "id_tipo_curso", "id_franja");
 
-        float precio       = parseDecimal(parametros.get(2), "precio");
-        int idInstructor   = parseEntero(parametros.get(4), "id_instructor");
-        int idVehiculo     = parseEntero(parametros.get(5), "id_vehiculo");
-        int idFranja       = parseEntero(parametros.get(7), "id_franja");
-
-        int idTipoCurso = dTipoCurso.getIdByNombre(parametros.get(6));
-        if (idTipoCurso == -1) {
-            throw new IllegalArgumentException(
-                "No existe el tipo de curso \"" + parametros.get(6) + "\". Use LISTCU[\"*\"] para ver los tipos disponibles."
-            );
-        }
+        float precio     = parseDecimal(parametros.get(2), "precio");
+        int idInstructor = parseEntero(parametros.get(4), "id_instructor");
+        int idVehiculo   = parseEntero(parametros.get(5), "id_vehiculo");
+        int idTipoCurso  = parseEntero(parametros.get(6), "id_tipo_curso");
+        int idFranja     = parseEntero(parametros.get(7), "id_franja");
 
         dCurso.guardar(
             parametros.get(0), parametros.get(1), precio,
             parametros.get(3), idInstructor, idVehiculo, idTipoCurso, idFranja
         );
         dCurso.desconectar();
-        dTipoCurso.desconectar();
     }
 
     /**

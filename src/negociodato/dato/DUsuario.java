@@ -9,7 +9,7 @@ import java.util.List;
 
 public class DUsuario {
 
-    public static final String[] HEADERS = {"ID", "NOMBRE", "APELLIDO", "DOCUMENTO", "CORREO", "TELEFONO", "ESTADO", "ROL"};
+    public static final String[] HEADERS = {"ID", "NOMBRE", "APELLIDO", "FECHA_NAC", "GENERO", "DOCUMENTO", "CORREO", "TELEFONO", "ESTADO", "ROL"};
 
     private final DBConeccion connection;
 
@@ -17,39 +17,44 @@ public class DUsuario {
         connection = new DBConeccion();
     }
 
-    public void guardar(String nombre, String apellido, String nroDocumento,
-                        String correo, String telefono, String direccion,
-                        String password, int rolId) throws SQLException {
+    public void guardar(String nombre, String apellido, java.sql.Date fechaNacimiento,
+                        String genero, String nroDocumento, String correo,
+                        String telefono, String direccion, String password,
+                        int rolId) throws SQLException {
         String query =
-            "INSERT INTO Usuario(nombre, apellido, nro_documento, correo, telefono, direccion, password, estado_usuario, rol_id) " +
-            "VALUES(?,?,?,?,?,?,?,'activo',?)";
+            "INSERT INTO Usuario(nombre, apellido, fecha_nacimiento, genero, nro_documento, correo, telefono, direccion, password, estado_usuario, rol_id) " +
+            "VALUES(?,?,?,?,?,?,?,?,?,'activo',?)";
         PreparedStatement ps = connection.connect().prepareStatement(query);
         ps.setString(1, nombre);
         ps.setString(2, apellido);
-        ps.setString(3, nroDocumento);
-        ps.setString(4, correo);
-        ps.setString(5, telefono);
-        ps.setString(6, direccion);
-        ps.setString(7, password);
-        ps.setInt(8, rolId);
+        ps.setDate(3, fechaNacimiento);
+        ps.setString(4, genero);
+        ps.setString(5, nroDocumento);
+        ps.setString(6, correo);
+        ps.setString(7, telefono);
+        ps.setString(8, direccion);
+        ps.setString(9, password);
+        ps.setInt(10, rolId);
         if (ps.executeUpdate() == 0) throw new SQLException();
     }
 
-    public void modificar(int id, String nombre, String apellido, String nroDocumento,
-                          String correo, String telefono, String direccion,
-                          String estado) throws SQLException {
+    public void modificar(int id, String nombre, String apellido, java.sql.Date fechaNacimiento,
+                          String genero, String nroDocumento, String correo,
+                          String telefono, String direccion, String estado) throws SQLException {
         String query =
-            "UPDATE Usuario SET nombre=?, apellido=?, nro_documento=?, correo=?, " +
+            "UPDATE Usuario SET nombre=?, apellido=?, fecha_nacimiento=?, genero=?, nro_documento=?, correo=?, " +
             "telefono=?, direccion=?, estado_usuario=?, actualizado_en=CURRENT_TIMESTAMP WHERE id=?";
         PreparedStatement ps = connection.connect().prepareStatement(query);
         ps.setString(1, nombre);
         ps.setString(2, apellido);
-        ps.setString(3, nroDocumento);
-        ps.setString(4, correo);
-        ps.setString(5, telefono);
-        ps.setString(6, direccion);
-        ps.setString(7, estado);
-        ps.setInt(8, id);
+        ps.setDate(3, fechaNacimiento);
+        ps.setString(4, genero);
+        ps.setString(5, nroDocumento);
+        ps.setString(6, correo);
+        ps.setString(7, telefono);
+        ps.setString(8, direccion);
+        ps.setString(9, estado);
+        ps.setInt(10, id);
         if (ps.executeUpdate() == 0) throw new SQLException();
     }
 
@@ -64,7 +69,7 @@ public class DUsuario {
     public List<String[]> listar() throws SQLException {
         List<String[]> lista = new ArrayList<>();
         String query =
-            "SELECT u.id, u.nombre, u.apellido, u.nro_documento, u.correo, " +
+            "SELECT u.id, u.nombre, u.apellido, u.fecha_nacimiento, u.genero, u.nro_documento, u.correo, " +
             "u.telefono, u.estado_usuario, r.nombre AS rol " +
             "FROM Usuario u JOIN Rol r ON u.rol_id = r.id ORDER BY u.id";
         PreparedStatement ps = connection.connect().prepareStatement(query);
@@ -74,6 +79,8 @@ public class DUsuario {
                 String.valueOf(rs.getInt("id")),
                 rs.getString("nombre"),
                 rs.getString("apellido"),
+                rs.getDate("fecha_nacimiento") != null ? rs.getDate("fecha_nacimiento").toString() : "",
+                rs.getString("genero") != null ? rs.getString("genero") : "",
                 rs.getString("nro_documento"),
                 rs.getString("correo"),
                 rs.getString("telefono") != null ? rs.getString("telefono") : "",

@@ -57,15 +57,6 @@ public class Interpreter implements Runnable{
             case Token.HELP:
                 listener.help(token_event);
                 break;
-            case Token.CATEGORIA:
-                listener.categoria(token_event);
-                break;
-            case Token.PRODUCTO:
-                listener.producto(token_event);
-                break;
-            case Token.PROMOCION:
-                listener.promocion(token_event);
-                break;
             case Token.ROL:
                 listener.rol(token_event);
                 break;

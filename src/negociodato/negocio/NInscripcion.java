@@ -1,7 +1,6 @@
 package negociodato.negocio;
 
 import negociodato.dato.DInscripcion;
-import negociodato.dato.DPlanPago;
 import negociodato.dato.DCurso;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -10,25 +9,21 @@ import java.util.List;
 public class NInscripcion {
 
     private final DInscripcion dInscripcion;
-    private final DPlanPago    dPlanPago;
     private final DCurso       dCurso;
 
     public NInscripcion() {
         this.dInscripcion = new DInscripcion();
-        this.dPlanPago    = new DPlanPago();
         this.dCurso       = new DCurso();
     }
 
-    /**
-     * INSINC["fecha","estado","id_estudiante","id_curso","nombre_plan"]
-     * fecha: YYYY-MM-DD
-     * monto_total: se calcula automáticamente desde Curso.precio_final
-     */
+    // INSINC["fecha","estado","id_estudiante","id_curso","id_plan_pago"]
+    // monto_total se calcula automáticamente desde Curso.precio_final
     public void guardar(List<String> parametros) throws SQLException {
-        validar(parametros, 5, "fecha (YYYY-MM-DD)", "estado", "id_estudiante", "id_curso", "nombre_plan");
+        validar(parametros, 5, "fecha (YYYY-MM-DD)", "estado", "id_estudiante", "id_curso", "id_plan_pago");
 
         int idEstudiante = parseEntero(parametros.get(2), "id_estudiante");
         int idCurso      = parseEntero(parametros.get(3), "id_curso");
+        int idPlanPago   = parseEntero(parametros.get(4), "id_plan_pago");
 
         float montoTotal = dCurso.getPrecioFinal(idCurso);
         if (montoTotal < 0) {
@@ -37,17 +32,9 @@ public class NInscripcion {
             );
         }
 
-        int idPlanPago = dPlanPago.getIdByNombre(parametros.get(4));
-        if (idPlanPago == -1) {
-            throw new IllegalArgumentException(
-                "No existe el plan de pago \"" + parametros.get(4) + "\". Use LISPLN[\"*\"] para ver los planes disponibles."
-            );
-        }
-
         dInscripcion.guardar(parametros.get(0), parametros.get(1), montoTotal,
                              idEstudiante, idPlanPago, idCurso);
         dInscripcion.desconectar();
-        dPlanPago.desconectar();
         dCurso.desconectar();
     }
 

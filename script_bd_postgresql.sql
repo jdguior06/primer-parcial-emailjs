@@ -181,7 +181,3 @@ INSERT INTO Rol(nombre, descripcion) VALUES
   ('Instructor',    'Docente de cursos de conducción'),
   ('Estudiante',    'Alumno inscrito en un curso');
 
--- Columnas para integración PagoFacil QR
-ALTER TABLE Pago ADD COLUMN nro_cuota      INTEGER      DEFAULT 1;
-ALTER TABLE Pago ADD COLUMN transaction_id VARCHAR(100);
-ALTER TABLE Pago ADD COLUMN estado_pago    VARCHAR(20)  DEFAULT 'pendiente';
