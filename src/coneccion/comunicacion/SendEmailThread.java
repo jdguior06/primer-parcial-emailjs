@@ -15,6 +15,8 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
+import javax.activation.DataHandler;
+import javax.mail.util.ByteArrayDataSource;
 
 //SOLO TOCAR LAS CREDENCIALES
 public class SendEmailThread implements Runnable {
@@ -32,10 +34,14 @@ public class SendEmailThread implements Runnable {
     private final static String PORT_SMTP = "25";
     private final static String PROTOCOL = "smtp";
     private final static String HOST = "mail.tecnoweb13sa.online";
+    //private final static String HOST = "mail.tecnoweb.org.bo";
     private final static String USER = "grupo13sa";
     private final static String PASSWORD = "grupo13sagrupo13sa";
+    //private final static String PASSWORD = "grup013grup013*";
     private final static String MAIL = "grupo13sa@tecnoweb13sa.online";
+    //private final static String MAIL = "grupo13sa@tecnoweb.org.bo";
     private final static String MAIL_PASSWORD = "grupo13sagrupo13sa";
+    //private final static String MAIL_PASSWORD = "grup013grup013*";
     
    
     private Email email;
@@ -63,23 +69,59 @@ public class SendEmailThread implements Runnable {
             }
         });
         
-        try {    
+        try {
             MimeMessage message = new MimeMessage(session);
             message.setFrom(new InternetAddress(MAIL));
-            
+
             InternetAddress[] toAddresses = {new InternetAddress(email.getTo())};
-            
+
             message.setRecipients(MimeMessage.RecipientType.TO, toAddresses);
             message.setSubject(email.getSubject());
-            
-            Multipart multipart = new MimeMultipart("alternative");
-            MimeBodyPart htmlPart = new MimeBodyPart();
-            
-            htmlPart.setContent(email.getMessage(), "text/html; charset=utf-8");
-            multipart.addBodyPart(htmlPart);
-            message.setContent(multipart);
+
+            if (email.getPdfBytes() != null) {
+                // multipart/mixed: HTML + PDF adjunto
+                MimeMultipart mixed = new MimeMultipart("mixed");
+
+                MimeBodyPart htmlPart = new MimeBodyPart();
+                htmlPart.setContent(email.getMessage(), "text/html; charset=utf-8");
+                mixed.addBodyPart(htmlPart);
+
+                MimeBodyPart pdfPart = new MimeBodyPart();
+                pdfPart.setDataHandler(new DataHandler(
+                    new ByteArrayDataSource(email.getPdfBytes(), "application/pdf")
+                ));
+                pdfPart.setFileName("certificado_acb.pdf");
+                pdfPart.setDisposition(MimeBodyPart.ATTACHMENT);
+                mixed.addBodyPart(pdfPart);
+
+                message.setContent(mixed);
+            } else if (email.getQrImageBytes() != null) {
+                // multipart/related: HTML + imagen inline referenciada por CID
+                MimeMultipart related = new MimeMultipart("related");
+
+                MimeBodyPart htmlPart = new MimeBodyPart();
+                htmlPart.setContent(email.getMessage(), "text/html; charset=utf-8");
+                related.addBodyPart(htmlPart);
+
+                MimeBodyPart imgPart = new MimeBodyPart();
+                imgPart.setDataHandler(new javax.activation.DataHandler(
+                    new javax.mail.util.ByteArrayDataSource(email.getQrImageBytes(), "image/png")
+                ));
+                imgPart.setHeader("Content-ID", "<qr-pagofacil>");
+                imgPart.setDisposition(MimeBodyPart.INLINE);
+                related.addBodyPart(imgPart);
+
+                message.setContent(related);
+            } else {
+                Multipart multipart = new MimeMultipart("alternative");
+                MimeBodyPart htmlPart = new MimeBodyPart();
+                htmlPart.setContent(email.getMessage(), "text/html; charset=utf-8");
+                multipart.addBodyPart(htmlPart);
+                message.setContent(multipart);
+            }
+
             message.saveChanges();
-            
+
             Transport.send(message);
             System.out.println("MENSAJE ENVIADO CON EXITO");
         } catch (NoSuchProviderException | AddressException ex) {

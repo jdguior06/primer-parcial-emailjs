@@ -10,11 +10,30 @@ public class Email {
     public Email(){
     }
 
+    private byte[] qrImageBytes;
+    private byte[] pdfBytes;
+
     public Email(String to, String subject, String message) {
         this.to = to;
         this.subject = subject;
         this.message = message;
     }
+
+    public Email(String to, String subject, String message, byte[] qrImageBytes) {
+        this.to = to;
+        this.subject = subject;
+        this.message = message;
+        this.qrImageBytes = qrImageBytes;
+    }
+
+    public static Email conPdf(String to, String subject, String message, byte[] pdfBytes) {
+        Email e = new Email(to, subject, message);
+        e.pdfBytes = pdfBytes;
+        return e;
+    }
+
+    public byte[] getQrImageBytes() { return qrImageBytes; }
+    public byte[] getPdfBytes()     { return pdfBytes; }
 
     public Email(String from, String subject) {
         this.from = from;

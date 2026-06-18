@@ -6,7 +6,7 @@ package main;
 
 /**
  **
- * @author  DAVID, ELMER
+ * @author  DIEGO
  */
 public class Main {
     public static void main(String[] args) {

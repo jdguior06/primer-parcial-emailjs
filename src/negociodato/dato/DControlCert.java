@@ -19,17 +19,61 @@ public class DControlCert {
         connection = new DBConeccion();
     }
 
-    public void guardar(int inscripcionId, float nota,
-                        String estado, String fechaEmision) throws SQLException {
+    public int guardar(int inscripcionId, float nota,
+                       String estado, String fechaEmision) throws SQLException {
         String query =
             "INSERT INTO ControlCertificacion(inscripcion_id, nota, estado_certificacion, fecha_emision) " +
-            "VALUES(?, ?, ?, ?::DATE)";
+            "VALUES(?, ?, ?, ?::DATE) RETURNING id";
+        System.out.println("[DControlCert.guardar] ejecutando INSERT con inscripcionId=" + inscripcionId);
         PreparedStatement ps = connection.connect().prepareStatement(query);
         ps.setInt(1, inscripcionId);
         ps.setFloat(2, nota);
         ps.setString(3, estado);
         ps.setString(4, fechaEmision);
-        if (ps.executeUpdate() == 0) throw new SQLException();
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            int id = rs.getInt(1);
+            System.out.println("[DControlCert.guardar] INSERT OK, id=" + id);
+            return id;
+        }
+        throw new SQLException("No se pudo obtener el ID del certificado insertado.");
+    }
+
+    public String[] obtenerDatosParaCertificado(int certId) throws SQLException {
+        System.out.println("[DControlCert.obtenerDatos] buscando certId=" + certId);
+        String query =
+            "SELECT cc.id, " +
+            "est.nombre || ' ' || est.apellido AS estudiante, est.nro_documento, " +
+            "tc.nombre AS tipo_curso, " +
+            "cc.nota, cc.estado_certificacion, " +
+            "COALESCE(cc.fecha_emision::TEXT, '-') AS fecha_emision, " +
+            "inst.nombre || ' ' || inst.apellido AS instructor, " +
+            "c.fecha_inicio::TEXT, c.fecha_fin::TEXT " +
+            "FROM ControlCertificacion cc " +
+            "JOIN Inscripcion i ON cc.inscripcion_id = i.id " +
+            "JOIN Usuario est ON i.estudiante_id = est.id " +
+            "JOIN Curso c ON i.curso_id = c.id " +
+            "JOIN TipoCurso tc ON c.tipo_curso_id = tc.id " +
+            "JOIN Usuario inst ON c.instructor_id = inst.id " +
+            "WHERE cc.id = ?";
+        PreparedStatement ps = connection.connect().prepareStatement(query);
+        ps.setInt(1, certId);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return new String[]{
+                String.valueOf(rs.getInt("id")),
+                rs.getString("estudiante"),
+                rs.getString("nro_documento"),
+                rs.getString("tipo_curso"),
+                String.format("%.1f", rs.getFloat("nota")),
+                rs.getString("estado_certificacion"),
+                rs.getString("fecha_emision"),
+                rs.getString("instructor"),
+                rs.getString("fecha_inicio"),
+                rs.getString("fecha_fin")
+            };
+        }
+        return null;
     }
 
     public void modificar(int id, float nota, String estado, String fechaEmision) throws SQLException {

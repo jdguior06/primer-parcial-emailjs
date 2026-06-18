@@ -57,6 +57,9 @@ public class Interpreter implements Runnable{
             case Token.HELP:
                 listener.help(token_event);
                 break;
+            case Token.HELP_FLUJO:
+                listener.helpFlujo(token_event);
+                break;
             case Token.ROL:
                 listener.rol(token_event);
                 break;

@@ -137,7 +137,7 @@ public class Analex {
                     break;
 
                 case 1:
-                    if(isLetter(c)){
+                    if(isLetter(c) || isDigit(c)){
                         ac = ac + c;
                         cinta.forward();
                         status = 1;

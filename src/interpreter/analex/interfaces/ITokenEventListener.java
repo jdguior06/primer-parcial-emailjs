@@ -4,6 +4,7 @@ import interpreter.events.TokenEvent;
 public interface ITokenEventListener {
 
     void help(TokenEvent event);
+    void helpFlujo(TokenEvent event);
     // Paso 0 — Catálogos ACB
     void rol(TokenEvent event);
     void metodoPago(TokenEvent event);

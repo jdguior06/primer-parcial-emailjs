@@ -17,16 +17,28 @@ public class NControlCert {
      * INSCRT["id_inscripcion","nota","estado","fecha_emision"]
      * fecha_emision: YYYY-MM-DD
      * estado: p.ej. "aprobado", "reprobado", "pendiente"
+     * Retorna String[] con datos del certificado para generar el PDF.
      */
-    public void guardar(List<String> parametros) throws SQLException {
+    public String[] guardar(List<String> parametros) throws SQLException {
         validar(parametros, 4, "id_inscripcion", "nota", "estado_certificacion",
                                "fecha_emision (YYYY-MM-DD)");
 
         int idInscripcion = parseEntero(parametros.get(0), "id_inscripcion");
         float nota        = parseDecimal(parametros.get(1), "nota");
 
-        dControlCert.guardar(idInscripcion, nota, parametros.get(2), parametros.get(3));
+        System.out.println("[INSCRT] params: id_inscripcion=" + idInscripcion
+            + " nota=" + nota
+            + " estado=" + parametros.get(2)
+            + " fecha=" + parametros.get(3));
+
+        int certId = dControlCert.guardar(idInscripcion, nota, parametros.get(2), parametros.get(3));
+        System.out.println("[INSCRT] INSERT OK — certId=" + certId);
+
+        String[] datos = dControlCert.obtenerDatosParaCertificado(certId);
+        System.out.println("[INSCRT] datos cert: " + (datos != null ? java.util.Arrays.toString(datos) : "NULL"));
+
         dControlCert.desconectar();
+        return datos;
     }
 
     /**

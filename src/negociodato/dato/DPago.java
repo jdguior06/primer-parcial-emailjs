@@ -21,15 +21,15 @@ public class DPago {
 
     /**
      * Inserta el pago en estado 'pendiente' y retorna el id generado.
-     * El transaction_id se actualiza luego con actualizarTransaccion().
+     * El id_transaccion se actualiza luego con actualizarTransaccion().
      */
     public int guardarPendiente(String fecha, float monto, int usuarioId,
                                 int metodoId, int inscripcionId,
-                                int nroCuota) throws SQLException {
+                                int nroCuota, String correoNotificacion) throws SQLException {
         String query =
             "INSERT INTO Pago(fecha, monto, usuario_id, metodo_id, inscripcion_id, " +
-            "nro_cuota, estado_pago) " +
-            "VALUES(?::DATE, ?, ?, ?, ?, ?, 'pendiente') RETURNING id";
+            "nro_cuota, estado_pago, correo_notificacion) " +
+            "VALUES(?::DATE, ?, ?, ?, ?, ?, 'pendiente', ?) RETURNING id";
         PreparedStatement ps = connection.connect().prepareStatement(query);
         ps.setString(1, fecha);
         ps.setFloat(2, monto);
@@ -37,18 +37,81 @@ public class DPago {
         ps.setInt(4, metodoId);
         ps.setInt(5, inscripcionId);
         ps.setInt(6, nroCuota);
+        ps.setString(7, correoNotificacion);
         ResultSet rs = ps.executeQuery();
         if (!rs.next()) throw new SQLException("No se pudo insertar el pago.");
         return rs.getInt("id");
     }
 
-    /** Asocia el transactionId de PagoFacil al pago ya insertado. */
-    public void actualizarTransaccion(int id, String transactionId) throws SQLException {
+    /**
+     * Retorna los pagos aprobados que aún no han sido notificados por correo.
+     * Cada String[]: [0]=id [1]=correo_notificacion [2]=monto [3]=nro_cuota
+     *                [4]=estudiante [5]=tipo_curso [6]=total_cuotas
+     */
+    public List<String[]> obtenerPagosParaNotificar() throws SQLException {
+        List<String[]> lista = new ArrayList<>();
         String query =
-            "UPDATE Pago SET transaction_id=?, actualizado_en=CURRENT_TIMESTAMP WHERE id=?";
+            "SELECT p.id, p.correo_notificacion, p.monto, p.nro_cuota, " +
+            "u.nombre || ' ' || u.apellido AS estudiante, " +
+            "tc.nombre AS tipo_curso, pp.numero_cuotas AS total_cuotas " +
+            "FROM Pago p " +
+            "JOIN Inscripcion i ON p.inscripcion_id = i.id " +
+            "JOIN Usuario u     ON i.estudiante_id  = u.id " +
+            "JOIN Curso c       ON i.curso_id        = c.id " +
+            "JOIN TipoCurso tc  ON c.tipo_curso_id   = tc.id " +
+            "JOIN PlanPago pp   ON i.plan_pago_id    = pp.id " +
+            "WHERE p.estado_pago = 'pagado' " +
+            "  AND p.notificado = false " +
+            "  AND p.correo_notificacion IS NOT NULL";
+        PreparedStatement ps = connection.connect().prepareStatement(query);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            lista.add(new String[]{
+                String.valueOf(rs.getInt("id")),
+                rs.getString("correo_notificacion"),
+                String.valueOf(rs.getFloat("monto")),
+                String.valueOf(rs.getInt("nro_cuota")),
+                rs.getString("estudiante"),
+                rs.getString("tipo_curso"),
+                String.valueOf(rs.getInt("total_cuotas"))
+            });
+        }
+        return lista;
+    }
+
+    public void marcarNotificado(int id) throws SQLException {
+        String query = "UPDATE Pago SET notificado=true, actualizado_en=CURRENT_TIMESTAMP WHERE id=?";
+        PreparedStatement ps = connection.connect().prepareStatement(query);
+        ps.setInt(1, id);
+        ps.executeUpdate();
+    }
+
+    /** Inserta pago en efectivo directamente como 'pagado'. */
+    public void guardarEfectivo(String fecha, float monto, int usuarioId,
+                                int metodoId, int inscripcionId,
+                                int nroCuota) throws SQLException {
+        String query =
+            "INSERT INTO Pago(fecha, monto, usuario_id, metodo_id, inscripcion_id, " +
+            "nro_cuota, estado_pago, notificado) " +
+            "VALUES(?::DATE, ?, ?, ?, ?, ?, 'pagado', true)";
+        PreparedStatement ps = connection.connect().prepareStatement(query);
+        ps.setString(1, fecha);
+        ps.setFloat(2, monto);
+        ps.setInt(3, usuarioId);
+        ps.setInt(4, metodoId);
+        ps.setInt(5, inscripcionId);
+        ps.setInt(6, nroCuota);
+        if (ps.executeUpdate() == 0) throw new SQLException("No se pudo insertar el pago en efectivo.");
+    }
+
+    /** Asocia el transactionId y paymentNumber de PagoFacil al pago ya insertado. */
+    public void actualizarTransaccion(int id, String transactionId, String paymentNumber) throws SQLException {
+        String query =
+            "UPDATE Pago SET id_transaccion=?, nro_pedido=?, actualizado_en=CURRENT_TIMESTAMP WHERE id=?";
         PreparedStatement ps = connection.connect().prepareStatement(query);
         ps.setString(1, transactionId);
-        ps.setInt(2, id);
+        ps.setString(2, paymentNumber);
+        ps.setInt(3, id);
         if (ps.executeUpdate() == 0) throw new SQLException();
     }
 

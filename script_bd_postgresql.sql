@@ -144,8 +144,11 @@ CREATE TABLE Pago (
     fecha DATE NOT NULL,
     monto FLOAT NOT NULL,
     nro_cuota INTEGER NOT NULL DEFAULT 1,
-    transaction_id VARCHAR(100),
+    id_transaccion VARCHAR(100),
+    nro_pedido VARCHAR(50),
     estado_pago VARCHAR(20) NOT NULL DEFAULT 'pendiente',
+    correo_notificacion VARCHAR(150),
+    notificado BOOLEAN DEFAULT FALSE,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     usuario_id INTEGER NOT NULL REFERENCES Usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE,
@@ -173,11 +176,3 @@ SELECT table_name
 FROM information_schema.tables 
 WHERE table_schema = 'public' 
 ORDER BY table_name;
-
--- Roles semilla
-INSERT INTO Rol(nombre, descripcion) VALUES
-  ('Administrador', 'Propietario y administrador del sistema'),
-  ('Secretaria',    'Registro de inscripciones y pagos'),
-  ('Instructor',    'Docente de cursos de conducción'),
-  ('Estudiante',    'Alumno inscrito en un curso');
-

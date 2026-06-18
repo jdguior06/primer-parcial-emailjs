@@ -204,9 +204,8 @@ public class HtmlBuilder {
      * totalCuotas  : "3"
      * transactionId: ID de la transacción en PagoFacil
      */
-    public static String generateQR(String qrBase64, String monto,
-                                    String nroCuota, String totalCuotas,
-                                    String transactionId) {
+    public static String generateQR(String monto, String nroCuota,
+                                    String totalCuotas, String transactionId) {
         String cssQr = ".qr-box { text-align:center; padding: 24px 20px; }\n"
             + ".qr-box h2 { color:" + C_PRIMARY + "; margin-bottom:6px; }\n"
             + ".qr-box .detalle { color:#444; font-size:15px; margin-bottom:18px; }\n"
@@ -219,12 +218,81 @@ public class HtmlBuilder {
             + "<h2>Código QR de Pago</h2>"
             + "<p class=\"detalle\">Cuota <strong>" + nroCuota + "</strong> de <strong>"
             + totalCuotas + "</strong> &mdash; Monto: <strong>Bs. " + monto + "</strong></p>"
-            + "<img src=\"data:image/png;base64," + qrBase64 + "\" alt=\"QR PagoFacil\">"
+            + "<img src=\"cid:qr-pagofacil\" alt=\"QR PagoFacil\">"
             + "<p class=\"aviso\">Escanee el código con su aplicación bancaria para completar el pago.</p>"
             + "<p class=\"tid\">Ref. transacción: " + transactionId + "</p>"
             + "</div>";
 
         return insertInHtml(cssQr, BalnearioHTML(body));
+    }
+
+    /**
+     * Correo de confirmación de pago exitoso enviado por el hilo de polling.
+     * datos: [0]=pagoId [1]=monto [2]=nroCuota [3]=estudiante [4]=tipoCurso [5]=totalCuotas
+     */
+    public static String generatePagoConfirmacion(String[] datos) {
+        String cssPago = ".pago-ok { text-align:center; padding: 28px 20px; }\n"
+            + ".pago-ok .icono { font-size:48px; color:" + C_ACCENT + "; margin-bottom:10px; }\n"
+            + ".pago-ok h2 { color:" + C_PRIMARY + "; margin-bottom:6px; }\n"
+            + ".pago-ok .detalle { color:#444; font-size:15px; margin:14px 0; }\n"
+            + ".pago-ok table { margin:20px auto; border-collapse:collapse; min-width:360px; }\n"
+            + ".pago-ok td { padding:9px 20px; border:1px solid #c8dfd0; }\n"
+            + ".pago-ok td:first-child { background:" + C_PRIMARY + "; color:#fff; font-weight:bold; }\n"
+            + ".pago-ok tbody tr:nth-child(even) td:last-child { background:" + C_ROW_ALT + "; }\n";
+
+        String tabla = "<table>"
+            + "<tbody>"
+            + "<tr><td>N&#176; Pago</td><td>#" + datos[0] + "</td></tr>"
+            + "<tr><td>Curso</td><td>" + datos[4] + "</td></tr>"
+            + "<tr><td>Estudiante</td><td>" + datos[3] + "</td></tr>"
+            + "<tr><td>Cuota</td><td>" + datos[2] + " de " + datos[5] + "</td></tr>"
+            + "<tr><td>Monto pagado</td><td><strong>Bs. " + datos[1] + "</strong></td></tr>"
+            + "</tbody></table>";
+
+        String body = "<div class=\"pago-ok\">"
+            + "<div class=\"icono\">&#10003;</div>"
+            + "<h2>&#161;Pago confirmado exitosamente!</h2>"
+            + "<p class=\"detalle\">El pago ha sido procesado y registrado en el sistema.</p>"
+            + tabla
+            + "</div>";
+
+        return insertInHtml(cssPago, BalnearioHTML(body));
+    }
+
+    /**
+     * Cuerpo HTML del correo cuando se registra una certificación con PDF adjunto.
+     * datos: [0]=certId [1]=estudiante [2]=nroDoc [3]=tipoCurso
+     *        [4]=nota   [5]=estado     [6]=fechaEmision [7]=instructor
+     */
+    public static String generateCertificadoConfirmacion(String[] datos) {
+        boolean aprobado = "aprobado".equalsIgnoreCase(datos[5]);
+        String cssCert = ".cert-ok { text-align:center; padding: 28px 20px; }\n"
+            + ".cert-ok .icono { font-size:46px; color:" + (aprobado ? C_ACCENT : "#cc8800") + "; margin-bottom:10px; }\n"
+            + ".cert-ok h2 { color:" + C_PRIMARY + "; margin-bottom:6px; }\n"
+            + ".cert-ok table { margin:20px auto; border-collapse:collapse; min-width:360px; }\n"
+            + ".cert-ok td { padding:9px 20px; border:1px solid #c8dfd0; }\n"
+            + ".cert-ok td:first-child { background:" + C_PRIMARY + "; color:#fff; font-weight:bold; }\n"
+            + ".cert-ok tbody tr:nth-child(even) td:last-child { background:" + C_ROW_ALT + "; }\n"
+            + ".cert-ok .aviso { margin-top:14px; font-size:13px; color:#555; }\n";
+
+        String tabla = "<table><tbody>"
+            + "<tr><td>N&#176; Certificado</td><td>#" + datos[0] + "</td></tr>"
+            + "<tr><td>Estudiante</td><td>" + datos[1] + "</td></tr>"
+            + "<tr><td>C.I.</td><td>" + datos[2] + "</td></tr>"
+            + "<tr><td>Curso</td><td>" + datos[3] + "</td></tr>"
+            + "<tr><td>Nota</td><td><strong>" + datos[4] + "</strong></td></tr>"
+            + "<tr><td>Calificaci&#243;n</td><td><strong>" + datos[5].toUpperCase() + "</strong></td></tr>"
+            + "<tr><td>Fecha de emisi&#243;n</td><td>" + datos[6] + "</td></tr>"
+            + "</tbody></table>";
+
+        String body = "<div class=\"cert-ok\">"
+            + "<div class=\"icono\">" + (aprobado ? "&#127891;" : "&#128196;") + "</div>"
+            + "<h2>Certificaci&#243;n registrada</h2>"
+            + tabla
+            + "<p class=\"aviso\">Se adjunta el certificado en formato PDF.</p>"
+            + "</div>";
+
+        return insertInHtml(cssCert, BalnearioHTML(body));
     }
 
     // ── Gráficas (Google Chart) ───────────────────────────────────────────────

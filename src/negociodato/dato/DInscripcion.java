@@ -87,17 +87,20 @@ public class DInscripcion {
 
     /**
      * Retorna los datos necesarios para generar el QR de pago.
-     * [0]=monto_total [1]=nro_cuotas [2]=clientName [3]=nro_documento [4]=telefono [5]=correo [6]=estudiante_id
+     * [0]=monto_total [1]=nro_cuotas [2]=clientName [3]=nro_documento [4]=telefono [5]=correo [6]=estudiante_id [7]=tipo_curso_nombre
      * Retorna null si no existe la inscripción.
      */
     public String[] getDatosParaPago(int inscripcionId) throws SQLException {
         String query =
             "SELECT i.monto_total, pp.numero_cuotas, " +
             "u.nombre || ' ' || u.apellido AS cliente_nombre, " +
-            "u.nro_documento, u.telefono, u.correo, u.id AS estudiante_id " +
+            "u.nro_documento, u.telefono, u.correo, u.id AS estudiante_id, " +
+            "tc.nombre AS tipo_curso_nombre " +
             "FROM Inscripcion i " +
-            "JOIN Usuario u   ON i.estudiante_id = u.id " +
-            "JOIN PlanPago pp ON i.plan_pago_id  = pp.id " +
+            "JOIN Usuario u     ON i.estudiante_id  = u.id " +
+            "JOIN PlanPago pp   ON i.plan_pago_id   = pp.id " +
+            "JOIN Curso c       ON i.curso_id        = c.id " +
+            "JOIN TipoCurso tc  ON c.tipo_curso_id   = tc.id " +
             "WHERE i.id = ?";
         PreparedStatement ps = connection.connect().prepareStatement(query);
         ps.setInt(1, inscripcionId);
@@ -110,7 +113,8 @@ public class DInscripcion {
             rs.getString("nro_documento"),
             rs.getString("telefono") != null ? rs.getString("telefono") : "",
             rs.getString("correo"),
-            String.valueOf(rs.getInt("estudiante_id"))
+            String.valueOf(rs.getInt("estudiante_id")),
+            rs.getString("tipo_curso_nombre")
         };
     }
 

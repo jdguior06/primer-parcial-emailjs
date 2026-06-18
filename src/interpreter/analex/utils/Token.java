@@ -15,6 +15,7 @@ public class Token {
 
     // ── Casos de uso activos (100-199) ────────────────────────────────────────
     public static final int HELP         = 100;
+    public static final int HELP_FLUJO   = 101;
     public static final int ROL          = 107;
     public static final int METODOPAGO   = 108;
     public static final int PLANPAGO     = 109;
@@ -129,6 +130,7 @@ public class Token {
 
     // ── Lexemas de casos de uso ───────────────────────────────────────────────
     public static final String LEXEME_HELP         = "ayuda";
+    public static final String LEXEME_HELP_FLUJO   = "ayuda1";
     public static final String LEXEME_ROL          = "rol";
     public static final String LEXEME_METODOPAGO   = "metodopago";
     public static final String LEXEME_PLANPAGO     = "planpago";
@@ -313,7 +315,8 @@ public class Token {
             case END:      return LEXEME_END;
             case ERROR:    return LEXEME_ERROR;
 
-            case HELP:      return LEXEME_HELP;
+            case HELP:        return LEXEME_HELP;
+            case HELP_FLUJO:  return LEXEME_HELP_FLUJO;
 
             case AGREGAR:   return LEXEME_AGREGAR;
             case ELIMINAR:  return LEXEME_ELIMINAR;
@@ -402,7 +405,8 @@ public class Token {
             case LEXEME_END:    return END;
             case LEXEME_ERROR:  return ERROR;
 
-            case LEXEME_HELP:      return HELP;
+            case LEXEME_HELP:        return HELP;
+            case LEXEME_HELP_FLUJO:  return HELP_FLUJO;
 
             case LEXEME_AGREGAR:   return AGREGAR;
             case LEXEME_ELIMINAR:  return ELIMINAR;

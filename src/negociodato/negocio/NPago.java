@@ -22,21 +22,30 @@ public class NPago {
     }
 
     /**
-     * INSPAG["fecha","id_cajero","id_inscripcion"]
+     * INSPAG["fecha","id_usuario","id_inscripcion","id_metodo"]
      *   fecha         : YYYY-MM-DD
-     *   id_cajero     : ID del usuario Secretaria/Administrador que registra el cobro
+     *   id_usuario    : ID del usuario que registra el cobro
      *   id_inscripcion: ID de la inscripción a abonar
+     *   id_metodo     : 1=Efectivo, 2=PagoFacil QR
      *
-     * Retorna String[] { qrBase64, transactionId, montoStr, nroCuotaStr, totalCuotasStr }
-     * para que Aplication construya el correo con la imagen QR.
+     * Retorna String[] cuyo primer elemento indica el tipo:
+     *   ["efectivo", montoStr, nroCuotaStr, totalCuotasStr]
+     *   ["qr", qrBase64, transactionId, montoStr, nroCuotaStr, totalCuotasStr]
      */
-    public String[] guardar(List<String> parametros) throws SQLException, IOException {
-        validar(parametros, 3, "fecha (YYYY-MM-DD)", "id_cajero", "id_inscripcion");
+    public String[] guardar(List<String> parametros, String correoSender) throws SQLException, IOException {
+        validar(parametros, 4, "fecha (YYYY-MM-DD)", "id_usuario", "id_inscripcion", "id_metodo (1=Efectivo, 2=QR)");
 
-        int idCajero      = parseEntero(parametros.get(1), "id_cajero");
+        int idUsuario     = parseEntero(parametros.get(1), "id_usuario");
         int idInscripcion = parseEntero(parametros.get(2), "id_inscripcion");
+        int idMetodo      = parseEntero(parametros.get(3), "id_metodo");
 
-        // ── Obtener datos de la inscripción y del estudiante ──────────────────
+        if (idMetodo != 1 && idMetodo != 2) {
+            throw new IllegalArgumentException(
+                "id_metodo inválido: use 1 (Efectivo) o 2 (PagoFacil QR)."
+            );
+        }
+
+        // ── Obtener datos de la inscripción ───────────────────────────────────
         String[] datos = dInscripcion.getDatosParaPago(idInscripcion);
         if (datos == null) {
             throw new IllegalArgumentException(
@@ -45,15 +54,13 @@ public class NPago {
             );
         }
 
-        float montoTotal    = Float.parseFloat(datos[0]);
-        int   totalCuotas   = Integer.parseInt(datos[1]);
-        String clientName   = datos[2];
-        String documentId   = datos[3];
-        String telefono     = datos[4];
-        String correo       = datos[5];
-        int    estudianteId = Integer.parseInt(datos[6]);
+        float montoTotal       = Float.parseFloat(datos[0]);
+        int   totalCuotas      = Integer.parseInt(datos[1]);
+        String clientName      = datos[2];
+        String documentId      = datos[3];
+        String tipoCursoNombre = datos[7];
 
-        // ── Calcular número de cuota y monto ─────────────────────────────────
+        // ── Calcular cuota ────────────────────────────────────────────────────
         int cuotasPagadas = dPago.contarPorInscripcion(idInscripcion);
         if (cuotasPagadas >= totalCuotas) {
             throw new IllegalArgumentException(
@@ -63,37 +70,52 @@ public class NPago {
 
         int   nroCuota   = cuotasPagadas + 1;
         float montoCuota = montoTotal / totalCuotas;
-        // Los pagos son reales — se divide entre 100 para manejar centavos en pruebas
-        float montoApi   = montoCuota / 100f;
 
-        // ── Obtener o validar el método de pago "PagoFacil QR" ───────────────
-        int idMetodo = dMetodoPago.getIdByNombre("PagoFacil QR");
-        if (idMetodo == -1) {
-            throw new IllegalArgumentException(
-                "El método de pago \"PagoFacil QR\" no existe en la BD. " +
-                "Insértelo primero con INSMET[\"PagoFacil QR\",\"Pago mediante código QR PagoFacil\"]."
+        // ── Rama efectivo ─────────────────────────────────────────────────────
+        if (idMetodo == 1) {
+            dPago.guardarEfectivo(
+                parametros.get(0), montoCuota, idUsuario, idMetodo, idInscripcion, nroCuota
             );
+            dPago.desconectar();
+            dInscripcion.desconectar();
+            return new String[]{
+                "efectivo",
+                String.format("%.2f", montoCuota),
+                String.valueOf(nroCuota),
+                String.valueOf(totalCuotas)
+            };
         }
 
-        // ── Registrar pago en estado pendiente para obtener el ID ────────────
+        // ── Rama QR (id_metodo == 2) ──────────────────────────────────────────
+        // Se divide entre 1000 para pruebas: curso 500 Bs → 0.50 Bs al API
+        float montoApi = montoCuota / 1000f;
+
         int pagoId = dPago.guardarPendiente(
-            parametros.get(0), montoCuota, idCajero, idMetodo, idInscripcion, nroCuota
+            parametros.get(0), montoCuota, idUsuario, idMetodo, idInscripcion, nroCuota, correoSender
         );
 
-        // ── Llamar a la API de PagoFacil ─────────────────────────────────────
-        PagoFacilService servicio = new PagoFacilService();
-        PagoFacilService.QRResult qr = servicio.generarQR(
-            pagoId, montoApi, clientName, documentId, telefono, correo, estudianteId
-        );
+        String paymentNumber = System.currentTimeMillis() + String.format("%04d", pagoId);
 
-        // ── Asociar transactionId al pago ─────────────────────────────────────
-        dPago.actualizarTransaccion(pagoId, qr.transactionId);
+        PagoFacilService.QRResult qr;
+        try {
+            PagoFacilService servicio = new PagoFacilService();
+            qr = servicio.generarQR(
+                paymentNumber, montoApi, clientName, documentId, correoSender, "11001", tipoCursoNombre
+            );
+        } catch (IOException | IllegalStateException ex) {
+            // La API falló — revertir el pago pendiente para no dejar registros huérfanos
+            try { dPago.eliminar(pagoId); } catch (SQLException ignored) {}
+            throw ex;
+        }
+
+        dPago.actualizarTransaccion(pagoId, qr.transactionId, paymentNumber);
 
         dPago.desconectar();
         dMetodoPago.desconectar();
         dInscripcion.desconectar();
 
         return new String[]{
+            "qr",
             qr.qrBase64,
             qr.transactionId,
             String.format("%.2f", montoCuota),

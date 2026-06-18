@@ -34,49 +34,39 @@ public class PagoFacilService {
         return extraerString(resp, "accessToken");
     }
 
-    // ── Paso 2: obtener el primer paymentMethodId habilitado ──────────────────
+    private static final int PAYMENT_METHOD_QR = 34;
 
-    private int obtenerPaymentMethodId(String token) throws IOException {
-        HttpURLConnection conn = abrirConexion(URL_BASE + "/list-enabled-services", "POST");
-        conn.setRequestProperty("Authorization", "Bearer " + token);
-        conn.setRequestProperty("Response-Language", "es");
-        conn.setDoOutput(false);
+    // ── Paso 2: generar QR ────────────────────────────────────────────────────
 
-        String resp = leerRespuesta(conn);
-        validarRespuesta(resp, "listar métodos habilitados");
-        return Integer.parseInt(extraerNumero(resp, "paymentMethodId"));
-    }
+    public QRResult generarQR(String paymentNumber, float montoApi, String clientName,
+                              String documentId, String correoSender,
+                              String clientCode, String tipoCursoNombre) throws IOException {
+        String token = autenticar();
 
-    // ── Paso 3: generar QR ────────────────────────────────────────────────────
-
-    public QRResult generarQR(int pagoId, float montoApi, String clientName,
-                              String documentId, String telefono, String correo,
-                              int clientCode) throws IOException {
-        String token           = autenticar();
-        int    paymentMethodId = obtenerPaymentMethodId(token);
-
-        String monto = String.format("%.2f", montoApi);
+        String monto = String.format(java.util.Locale.US, "%.2f", montoApi);
         String body  = "{"
-            + "\"paymentMethod\":"  + paymentMethodId                    + ","
+            + "\"paymentMethod\":"  + PAYMENT_METHOD_QR                  + ","
             + "\"clientName\":\""   + escapar(clientName)                + "\","
             + "\"documentType\":1,"
             + "\"documentId\":\""   + escapar(documentId)                + "\","
-            + "\"phoneNumber\":\""  + escapar(telefono)                  + "\","
-            + "\"email\":\""        + escapar(correo)                    + "\","
-            + "\"paymentNumber\":\"" + pagoId                            + "\","
+            + "\"phoneNumber\":\"69087992\","
+            + "\"email\":\""        + escapar(correoSender)              + "\","
+            + "\"paymentNumber\":\"" + escapar(paymentNumber)            + "\","
             + "\"amount\":"         + monto                              + ","
             + "\"currency\":2,"
-            + "\"clientCode\":\""   + clientCode                        + "\","
+            + "\"clientCode\":\""   + escapar(clientCode)               + "\","
             + "\"callbackUrl\":\""  + Constantes.PAGOFACIL_CALLBACK_URL  + "\","
             + "\"orderDetail\":[{"
             +   "\"serial\":1,"
-            +   "\"product\":\"Cuota Curso ACB\","
+            +   "\"product\":\""    + escapar(tipoCursoNombre)           + "\","
             +   "\"quantity\":1,"
-            +   "\"price\":"    + monto + ","
+            +   "\"price\":"        + monto                              + ","
             +   "\"discount\":0,"
-            +   "\"total\":"    + monto
+            +   "\"total\":"        + monto
             + "}]"
             + "}";
+
+        System.out.println("=== [PagoFacil] BODY generate-qr ===\n" + body);
 
         HttpURLConnection conn = abrirConexion(URL_BASE + "/generate-qr", "POST");
         conn.setRequestProperty("Authorization", "Bearer " + token);
@@ -87,10 +77,11 @@ public class PagoFacilService {
         }
 
         String resp = leerRespuesta(conn);
+        System.out.println("=== [PagoFacil] RESP generate-qr ===\n" + resp);
         validarRespuesta(resp, "generar QR");
 
         return new QRResult(
-            extraerString(resp, "transactionId"),
+            extraerNumero(resp, "transactionId"),
             extraerString(resp, "qrBase64")
         );
     }

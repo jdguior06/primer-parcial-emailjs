@@ -1,6 +1,7 @@
 package main;
 
 import coneccion.comunicacion.MailVerificationThread;
+import coneccion.comunicacion.PagoNotificacionThread;
 import coneccion.comunicacion.SendEmailThread;
 import coneccion.interfaces.IEmailEventListener;
 import coneccion.utils.Email;
@@ -89,6 +90,11 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
         Thread thread = new Thread(mailVerificationThread);
         thread.setName("Mail Verification Thread");
         thread.start();
+
+        Thread pagoNotif = new Thread(new PagoNotificacionThread());
+        pagoNotif.setName("Pago Notificacion Thread");
+        pagoNotif.setDaemon(true);
+        pagoNotif.start();
     }
 
     @Override
@@ -108,6 +114,14 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
     @Override
     public void help(TokenEvent event) {
         tableNotifySuccess(event.getSender(), "Lista de Comandos", Comandos.HEADERS, nComando.listar());
+    }
+
+    @Override
+    public void helpFlujo(TokenEvent event) {
+        tableNotifySuccess(event.getSender(),
+            "Flujo Principal — Escuela de Conductores ACB Santa Cruz",
+            Comandos.HEADERS_FLUJO,
+            Comandos.listarFlujo());
     }
 
     @Override
@@ -289,8 +303,18 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
         try {
             switch (event.getAction()) {
                 case Token.AGREGAR:
-                    nControlCert.guardar(event.getParams());
-                    simpleNotifySuccess(event.getSender(), "Certificación registrada correctamente.");
+                    String[] datosCert = nControlCert.guardar(event.getParams());
+                    if (datosCert != null) {
+                        try {
+                            byte[] pdf = CertificadoPdfBuilder.generar(datosCert);
+                            sendEmail(Email.conPdf(event.getSender(), Email.SUBJECT,
+                                HtmlBuilder.generateCertificadoConfirmacion(datosCert), pdf));
+                        } catch (Exception pdfEx) {
+                            simpleNotifySuccess(event.getSender(), "Certificación registrada correctamente.");
+                        }
+                    } else {
+                        simpleNotifySuccess(event.getSender(), "Certificación registrada correctamente.");
+                    }
                     break;
                 case Token.MODIFICAR:
                     nControlCert.modificar(event.getParams());
@@ -307,6 +331,8 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
         } catch (IllegalArgumentException ex) {
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            System.err.println("[INSCRT] SQLException: " + ex.getMessage());
+            ex.printStackTrace();
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
@@ -434,10 +460,19 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
         try {
             switch (event.getAction()) {
                 case Token.AGREGAR:
-                    String[] qr = nPago.guardar(event.getParams());
-                    // qr: [0]=qrBase64 [1]=transactionId [2]=monto [3]=nroCuota [4]=totalCuotas
-                    sendEmail(new Email(event.getSender(), Email.SUBJECT,
-                        HtmlBuilder.generateQR(qr[0], qr[2], qr[3], qr[4], qr[1])));
+                    String[] result = nPago.guardar(event.getParams(), event.getSender());
+                    if ("efectivo".equals(result[0])) {
+                        // result: [0]="efectivo" [1]=monto [2]=nroCuota [3]=totalCuotas
+                        simpleNotifySuccess(event.getSender(),
+                            "Pago en efectivo registrado. Cuota " + result[2] +
+                            " de " + result[3] + " — Bs. " + result[1] + ".");
+                    } else {
+                        // result: [0]="qr" [1]=qrBase64 [2]=transactionId [3]=monto [4]=nroCuota [5]=totalCuotas
+                        byte[] qrBytes = java.util.Base64.getDecoder().decode(result[1].replace("\\/", "/"));
+                        sendEmail(new Email(event.getSender(), Email.SUBJECT,
+                            HtmlBuilder.generateQR(result[3], result[4], result[5], result[2]),
+                            qrBytes));
+                    }
                     break;
                 case Token.MODIFICAR:
                     nPago.modificar(event.getParams());
