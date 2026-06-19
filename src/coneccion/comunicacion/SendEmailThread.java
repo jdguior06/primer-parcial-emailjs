@@ -33,15 +33,15 @@ public class SendEmailThread implements Runnable {
     
     private final static String PORT_SMTP = "25";
     private final static String PROTOCOL = "smtp";
-    private final static String HOST = "mail.tecnoweb13sa.online";
-    //private final static String HOST = "mail.tecnoweb.org.bo";
+    //private final static String HOST = "mail.tecnoweb13sa.online";
+    private final static String HOST = "mail.tecnoweb.org.bo";
     private final static String USER = "grupo13sa";
-    private final static String PASSWORD = "grupo13sagrupo13sa";
-    //private final static String PASSWORD = "grup013grup013*";
-    private final static String MAIL = "grupo13sa@tecnoweb13sa.online";
-    //private final static String MAIL = "grupo13sa@tecnoweb.org.bo";
-    private final static String MAIL_PASSWORD = "grupo13sagrupo13sa";
-    //private final static String MAIL_PASSWORD = "grup013grup013*";
+    //private final static String PASSWORD = "grupo13sagrupo13sa";
+    private final static String PASSWORD = "grup013grup013*";
+    //private final static String MAIL = "grupo13sa@tecnoweb13sa.online";
+    private final static String MAIL = "grupo13sa@tecnoweb.org.bo";
+    //private final static String MAIL_PASSWORD = "grupo13sagrupo13sa";
+    private final static String MAIL_PASSWORD = "grup013grup013*";
     
    
     private Email email;

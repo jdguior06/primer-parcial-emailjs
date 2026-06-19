@@ -99,6 +99,9 @@ public class Interpreter implements Runnable{
             case Token.REPORTE:
                 listener.reporte(token_event);
                 break;
+            case Token.RESERVA:
+                listener.reserva(token_event);
+                break;
         }
         
     }

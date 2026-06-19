@@ -2,7 +2,7 @@ package coneccion.comunicacion;
 
 import coneccion.utils.Email;
 import main.HtmlBuilder;
-import negociodato.dato.DPago;
+import dato.DPago;
 
 import java.sql.SQLException;
 import java.util.List;

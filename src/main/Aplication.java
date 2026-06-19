@@ -14,36 +14,42 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
-import negociodato.dato.DMetodoPago;
-import negociodato.dato.DPlanPago;
-import negociodato.dato.DRol;
-import negociodato.dato.DTipoCurso;
-import negociodato.dato.DTipoVehiculo;
-import negociodato.dato.DFranjaHoraria;
-import negociodato.negocio.NComando;
-import negociodato.negocio.NFranjaHoraria;
-import negociodato.negocio.NMetodoPago;
-import negociodato.negocio.NPlanPago;
-import negociodato.negocio.NRol;
-import negociodato.negocio.NTipoCurso;
-import negociodato.negocio.NTipoVehiculo;
-import negociodato.negocio.NUsuario;
-import negociodato.negocio.NVehiculo;
-import negociodato.negocio.NCurso;
-import negociodato.negocio.NInscripcion;
-import negociodato.negocio.NControlCert;
-import negociodato.negocio.NPago;
-import negociodato.negocio.NReporte;
-import negociodato.dato.DUsuario;
-import negociodato.dato.DVehiculo;
-import negociodato.dato.DCurso;
-import negociodato.dato.DInscripcion;
-import negociodato.dato.DControlCert;
-import negociodato.dato.DPago;
-import negociodato.dato.DReporte;
-import negociodato.utils.Comandos;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import dato.DMetodoPago;
+import dato.DPlanPago;
+import dato.DRol;
+import dato.DTipoCurso;
+import dato.DTipoVehiculo;
+import dato.DFranjaHoraria;
+import negocio.NComando;
+import negocio.NFranjaHoraria;
+import negocio.NMetodoPago;
+import negocio.NPlanPago;
+import negocio.NRol;
+import negocio.NTipoCurso;
+import negocio.NTipoVehiculo;
+import negocio.NUsuario;
+import negocio.NVehiculo;
+import negocio.NCurso;
+import negocio.NInscripcion;
+import negocio.NControlCert;
+import negocio.NPago;
+import negocio.NReporte;
+import negocio.NReserva;
+import dato.DUsuario;
+import dato.DVehiculo;
+import dato.DCurso;
+import dato.DInscripcion;
+import dato.DControlCert;
+import dato.DPago;
+import dato.DReporte;
+import dato.DReserva;
+import utils.Comandos;
 
 public class Aplication implements IEmailEventListener, ITokenEventListener {
+
+    private static final Logger LOG = Logger.getLogger(Aplication.class.getName());
 
     private static final int CONSTRAINTS_ERROR        = -2;
     private static final int INDEX_OUT_OF_BOUND_ERROR = -4;
@@ -65,6 +71,7 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
     private NControlCert  nControlCert;
     private NPago         nPago;
     private NReporte      nReporte;
+    private NReserva      nReserva;
 
     public Aplication() {
         mailVerificationThread = new MailVerificationThread();
@@ -84,6 +91,7 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
         nControlCert   = new NControlCert();
         nPago          = new NPago();
         nReporte       = new NReporte();
+        nReserva       = new NReserva();
     }
 
     public void start() {
@@ -100,6 +108,7 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
     @Override
     public void onReceiveEmailEvent(List<Email> emails) {
         for (Email email : emails) {
+            LOG.info("[CORREO RECIBIDO] de: " + email.getFrom() + " | subject: " + email.getSubject());
             String subject = email.getSubject() + " ";
             Interpreter interpreter = new Interpreter(subject, email.getFrom());
             interpreter.setListener(Aplication.this);
@@ -113,15 +122,15 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
 
     @Override
     public void help(TokenEvent event) {
-        tableNotifySuccess(event.getSender(), "Lista de Comandos", Comandos.HEADERS, nComando.listar());
+        tableNotifySuccess(event.getSender(),
+            "Flujo Principal",
+            Comandos.HEADERS_FLUJO,
+            Comandos.listarFlujo());
     }
 
     @Override
     public void helpFlujo(TokenEvent event) {
-        tableNotifySuccess(event.getSender(),
-            "Flujo Principal — Escuela de Conductores ACB Santa Cruz",
-            Comandos.HEADERS_FLUJO,
-            Comandos.listarFlujo());
+        tableNotifySuccess(event.getSender(), "Lista de Comandos", Comandos.HEADERS, nComando.listar());
     }
 
     @Override
@@ -145,10 +154,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -174,10 +186,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -203,10 +218,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -232,10 +250,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -261,10 +282,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -274,8 +298,10 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
         try {
             switch (event.getAction()) {
                 case Token.AGREGAR:
-                    nUsuario.guardar(event.getParams());
-                    simpleNotifySuccess(event.getSender(), "Usuario registrado correctamente.");
+                    String[] datosUsuario = nUsuario.guardar(event.getParams());
+                    ArrayList<String[]> filaUsuario = new ArrayList<>();
+                    filaUsuario.add(datosUsuario);
+                    tableNotifySuccess(event.getSender(), "Usuario registrado correctamente", DUsuario.HEADERS, filaUsuario);
                     break;
                 case Token.MODIFICAR:
                     nUsuario.modificar(event.getParams());
@@ -290,10 +316,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -331,10 +360,10 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
         } catch (IllegalArgumentException ex) {
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
-            System.err.println("[INSCRT] SQLException: " + ex.getMessage());
-            ex.printStackTrace();
+            LOG.log(Level.SEVERE, "[SQL][CERT] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS][CERT] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -344,8 +373,10 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
         try {
             switch (event.getAction()) {
                 case Token.AGREGAR:
-                    nInscripcion.guardar(event.getParams());
-                    simpleNotifySuccess(event.getSender(), "Inscripción registrada correctamente.");
+                    String[] datosInsc = nInscripcion.guardar(event.getParams());
+                    ArrayList<String[]> filaInsc = new ArrayList<>();
+                    filaInsc.add(datosInsc);
+                    tableNotifySuccess(event.getSender(), "Inscripción registrada correctamente", DInscripcion.HEADERS, filaInsc);
                     break;
                 case Token.MODIFICAR:
                     nInscripcion.modificar(event.getParams());
@@ -360,10 +391,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -389,10 +423,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -418,10 +455,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -447,10 +487,13 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException ex) {
+            LOG.warning("[VALIDACION] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -487,12 +530,16 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (IllegalArgumentException | IllegalStateException ex) {
+            LOG.warning("[VALIDACION][PAGO] sender: " + event.getSender() + " | " + ex.getMessage());
             validationError(event.getSender(), ex.getMessage());
         } catch (IOException ex) {
+            LOG.log(Level.SEVERE, "[IO][PAGO] sender: " + event.getSender() + " | Error PagoFacil", ex);
             validationError(event.getSender(), "Error al conectar con PagoFacil: " + ex.getMessage());
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL][PAGO] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
         } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS][PAGO] sender: " + event.getSender() + " | Parametros insuficientes");
             handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
@@ -529,7 +576,38 @@ public class Aplication implements IEmailEventListener, ITokenEventListener {
                     break;
             }
         } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL][REPORTE] sender: " + event.getSender(), ex);
             handleError(CONSTRAINTS_ERROR, event.getSender(), null);
+        }
+    }
+
+    @Override
+    public void reserva(TokenEvent event) {
+        try {
+            switch (event.getAction()) {
+                case Token.AGREGAR:
+                    String[] datosCurso = nReserva.reservar(event.getParams());
+                    ArrayList<String[]> filaCurso = new ArrayList<>();
+                    filaCurso.add(datosCurso);
+                    tableNotifySuccess(event.getSender(), "Curso reservado exitosamente", DReserva.HEADERS, filaCurso);
+                    break;
+                case Token.ELIMINAR:
+                    nReserva.cancelar(event.getParams());
+                    simpleNotifySuccess(event.getSender(), "Reserva cancelada. El curso vuelve a estar disponible.");
+                    break;
+                case Token.LISTAR:
+                    tableNotifySuccess(event.getSender(), "Cursos Disponibles para Reservar", DReserva.HEADERS, nReserva.listar());
+                    break;
+            }
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            LOG.warning("[VALIDACION][RESERVA] sender: " + event.getSender() + " | " + ex.getMessage());
+            validationError(event.getSender(), ex.getMessage());
+        } catch (SQLException ex) {
+            LOG.log(Level.SEVERE, "[SQL][RESERVA] sender: " + event.getSender(), ex);
+            handleError(CONSTRAINTS_ERROR, event.getSender(), null);
+        } catch (IndexOutOfBoundsException ex) {
+            LOG.warning("[PARAMS][RESERVA] sender: " + event.getSender() + " | Parametros insuficientes");
+            handleError(INDEX_OUT_OF_BOUND_ERROR, event.getSender(), null);
         }
     }
 

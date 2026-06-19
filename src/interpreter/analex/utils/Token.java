@@ -29,6 +29,7 @@ public class Token {
     public static final int CERTIFICACION = 117;
     public static final int PAGO          = 118;
     public static final int REPORTE       = 119;
+    public static final int RESERVA       = 120;
 
     // ── Acciones activas (200-299) ────────────────────────────────────────────
     public static final int AGREGAR  = 207;
@@ -93,6 +94,11 @@ public class Token {
     public static final int REPINS = 452;
     public static final int REPPAG = 453;
 
+    //    460-469 = RESERVA
+    public static final int LISRES = 460;
+    public static final int INSRES = 461;
+    public static final int DELRES = 463;
+
     //    420-429 = INSCRIPCION
     public static final int LISINC = 420;
     public static final int INSINC = 421;
@@ -130,7 +136,7 @@ public class Token {
 
     // ── Lexemas de casos de uso ───────────────────────────────────────────────
     public static final String LEXEME_HELP         = "ayuda";
-    public static final String LEXEME_HELP_FLUJO   = "ayuda1";
+    public static final String LEXEME_HELP_FLUJO   = "ayuda_administrativa";
     public static final String LEXEME_ROL          = "rol";
     public static final String LEXEME_METODOPAGO   = "metodopago";
     public static final String LEXEME_PLANPAGO     = "planpago";
@@ -144,6 +150,7 @@ public class Token {
     public static final String LEXEME_CERTIFICACION = "certificacion";
     public static final String LEXEME_PAGO          = "pago";
     public static final String LEXEME_REPORTE       = "reporte";
+    public static final String LEXEME_RESERVA       = "reserva";
 
     // ── Lexemas de acciones ───────────────────────────────────────────────────
     public static final String LEXEME_AGREGAR   = "agregar";
@@ -218,6 +225,10 @@ public class Token {
     public static final String LEXEME_REPINS = "repins";
     public static final String LEXEME_REPPAG = "reppag";
 
+    public static final String LEXEME_LISRES = "lisres";
+    public static final String LEXEME_INSRES = "insres";
+    public static final String LEXEME_DELRES = "delres";
+
     public static final String LEXEME_ERROR_COMMAND   = "UNKNOWN COMMAND";
     public static final String LEXEME_ERROR_CHARACTER = "UNKNOWN CHARACTER";
 
@@ -276,6 +287,7 @@ public class Token {
         if (compound >= 430 && compound < 440) return PAGO;
         if (compound >= 440 && compound < 450) return CERTIFICACION;
         if (compound >= 450 && compound < 460) return REPORTE;
+        if (compound >= 460 && compound < 470) return RESERVA;
         return -1;
     }
 
@@ -337,6 +349,7 @@ public class Token {
             case CERTIFICACION: return LEXEME_CERTIFICACION;
             case PAGO:          return LEXEME_PAGO;
             case REPORTE:       return LEXEME_REPORTE;
+            case RESERVA:       return LEXEME_RESERVA;
 
             case LISROL: return LEXEME_LISROL;
             case INSROL: return LEXEME_INSROL;
@@ -390,6 +403,9 @@ public class Token {
             case REPVEH: return LEXEME_REPVEH;
             case REPINS: return LEXEME_REPINS;
             case REPPAG: return LEXEME_REPPAG;
+            case LISRES: return LEXEME_LISRES;
+            case INSRES: return LEXEME_INSRES;
+            case DELRES: return LEXEME_DELRES;
 
             case ERROR_COMMAND:   return LEXEME_ERROR_COMMAND;
             case ERROR_CHARACTER: return LEXEME_ERROR_CHARACTER;
@@ -480,6 +496,10 @@ public class Token {
             case LEXEME_REPINS:        return REPINS;
             case LEXEME_REPPAG:        return REPPAG;
             case LEXEME_REPORTE:       return REPORTE;
+            case LEXEME_LISRES:        return LISRES;
+            case LEXEME_INSRES:        return INSRES;
+            case LEXEME_DELRES:        return DELRES;
+            case LEXEME_RESERVA:       return RESERVA;
 
             default: return -1;
         }

@@ -34,5 +34,8 @@ public interface ITokenEventListener {
     // CU-08
     void reporte(TokenEvent event);
 
+    // CU-09
+    void reserva(TokenEvent event);
+
     void error(TokenEvent event);
 }

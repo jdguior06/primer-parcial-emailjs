@@ -19,11 +19,11 @@ import javax.security.sasl.AuthenticationException;
 public class MailVerificationThread implements Runnable {
     
     private final static int PORT_POP = 110;
-    private final static String HOST = "mail.tecnoweb13sa.online";
-    //private final static String HOST = "mail.tecnoweb.org.bo";
+    //private final static String HOST = "mail.tecnoweb13sa.online";
+    private final static String HOST = "mail.tecnoweb.org.bo";
     private final static String USER = "grupo13sa";
-    private final static String PASSWORD = "grupo13sagrupo13sa";
-    //private final static String PASSWORD = "grup013grup013*";
+    //private final static String PASSWORD = "grupo13sagrupo13sa";
+    private final static String PASSWORD = "grup013grup013*";
     
     private Socket socket;
     private BufferedReader input;

@@ -110,18 +110,21 @@ CREATE TABLE Vehiculo (
 );
 
 -- Tabla: (Curso)
+-- estado_curso: 'disponible' | 'reservado' | 'inscrito' | 'cancelado'
+-- Ciclo: disponible → reservado → inscrito → disponible (al emitir certificado)
 CREATE TABLE Curso (
     id SERIAL PRIMARY KEY,
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     precio_final FLOAT NOT NULL,
-    estado_curso VARCHAR(20) NOT NULL,
+    estado_curso VARCHAR(20) NOT NULL DEFAULT 'disponible',
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     instructor_id INTEGER NOT NULL REFERENCES Usuario (id) ON DELETE RESTRICT ON UPDATE CASCADE,
     vehiculo_id INTEGER NOT NULL REFERENCES Vehiculo (id) ON DELETE RESTRICT ON UPDATE CASCADE,
     tipo_curso_id INTEGER NOT NULL REFERENCES TipoCurso (id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    franja_horaria_id INTEGER NOT NULL REFERENCES FranjaHoraria (id) ON DELETE RESTRICT ON UPDATE CASCADE
+    franja_horaria_id INTEGER NOT NULL REFERENCES FranjaHoraria (id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    reservado_por INTEGER REFERENCES Usuario (id) ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- Tabla: (Inscripcion)
@@ -129,7 +132,6 @@ CREATE TABLE Inscripcion (
     id SERIAL PRIMARY KEY,
     fecha_inscripcion DATE NOT NULL,
     estado_inscripcion VARCHAR(20) NOT NULL,
-    aprobados INT NOT NULL DEFAULT 0,
     monto_total FLOAT NOT NULL,
     creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     actualizado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

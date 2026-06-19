@@ -54,6 +54,8 @@ public class Extractor {
         }
         else if (plain_text.contains(INSTITUTIONAL2)) {
             end_string = "To:";
+        } else {
+            end_string = "To:";
         }
 
         int e = plain_text.indexOf(end_string, i);
