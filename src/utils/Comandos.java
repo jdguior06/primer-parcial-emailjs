@@ -113,38 +113,42 @@ public class Comandos {
             "Ver franjas horarias disponibles",
             "*",
             "LISFRA[\"*\"]"});
-        FLUJO.add(new String[]{"6",  "LISRES",
-            "Ver cursos disponibles para reservar",
-            "*",
-            "LISRES[\"*\"]"});
-        FLUJO.add(new String[]{"7",  "INSRES",
-            "Reservar el curso elegido (aparta el cupo)",
-            "id_curso, id_estudiante",
-            "INSRES[\"1\",\"5\"]"});
-        FLUJO.add(new String[]{"9",  "LISPLN",
+//        FLUJO.add(new String[]{"6",  "LISRES",
+//            "Ver cursos disponibles para reservar",
+//            "*",
+//            "LISRES[\"*\"]"});
+//        FLUJO.add(new String[]{"7",  "INSRES",
+//            "Reservar el curso elegido (aparta el cupo)",
+//            "id_curso, id_estudiante",
+//            "INSRES[\"1\",\"5\"]"});
+        FLUJO.add(new String[]{"6",  "LISPLN",
             "Ver planes de pago (contado, 2 cuotas, 3 cuotas...)",
             "*",
             "LISPLN[\"*\"]"});
-        FLUJO.add(new String[]{"10", "INSINC",
-            "Inscribir al estudiante en el curso reservado (valida que tenga reserva activa)",
+        FLUJO.add(new String[]{"7",  "LISCUR",
+            "Ver cursos disponibles para inscribirse",
+            "*",
+            "LISCUR[\"*\"]"});
+        FLUJO.add(new String[]{"8", "INSINC",
+            "Inscribir al estudiante en el curso elegido",
             "id_estudiante, id_curso, id_plan_pago",
             "INSINC[\"5\",\"2\",\"1\"]"});
-        FLUJO.add(new String[]{"11", "INSPAG",
+        FLUJO.add(new String[]{"9", "INSPAG",
             "Registrar pago — efectivo (id_metodo=1) o QR PagoFacil (id_metodo=2)",
             "id_inscripcion, id_metodo (1=Efectivo, 2=QR)",
             "INSPAG[\"1\",\"1\"]"});
-        FLUJO.add(new String[]{"12", "LISPAG",
+        FLUJO.add(new String[]{"10", "LISPAG",
             "Listar pagos — verificar cuotas registradas",
             "*",
             "LISPAG[\"*\"]"});
-        FLUJO.add(new String[]{"13", "INSCRT",
-            "Registrar nota: si nota >= 70 emite certificado y libera el curso; si nota < 70 libera el curso sin emitir certificado",
-            "id_inscripcion, nota, estado, fecha_emision (YYYY-MM-DD)",
-            "INSCRT[\"1\",\"85\",\"aprobado\",\"2026-06-17\"]"});
-        FLUJO.add(new String[]{"14", "LISCRT",
-            "Listar certificaciones emitidas",
-            "*",
-            "LISCRT[\"*\"]"});
+//        FLUJO.add(new String[]{"13", "INSCRT",
+//            "Registrar nota: si nota >= 70 emite certificado y libera el curso; si nota < 70 libera el curso sin emitir certificado",
+//            "id_inscripcion, nota, estado, fecha_emision (YYYY-MM-DD)",
+//            "INSCRT[\"1\",\"85\",\"aprobado\",\"2026-06-17\"]"});
+//        FLUJO.add(new String[]{"14", "LISCRT",
+//            "Listar certificaciones emitidas",
+//            "*",
+//            "LISCRT[\"*\"]"});
     }
 
     public static ArrayList<String[]> listarFlujo() {

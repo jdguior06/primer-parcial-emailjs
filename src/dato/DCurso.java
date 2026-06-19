@@ -111,6 +111,38 @@ public class DCurso {
         return ps.executeQuery().next();
     }
 
+    /**
+     * Asegura que el curso quede reservado por el estudiante para proceder con inscripción.
+     * Si está disponible: lo reserva atómicamente.
+     * Si ya está reservado por este estudiante: no hace nada.
+     * Lanza excepción en cualquier otro caso.
+     */
+    public void asegurarReservado(int cursoId, int estudianteId) throws SQLException {
+        String queryUpdate =
+            "UPDATE Curso SET estado_curso='reservado', reservado_por=?, " +
+            "actualizado_en=CURRENT_TIMESTAMP WHERE id=? AND estado_curso='disponible'";
+        PreparedStatement psUpdate = connection.connect().prepareStatement(queryUpdate);
+        psUpdate.setInt(1, estudianteId);
+        psUpdate.setInt(2, cursoId);
+        if (psUpdate.executeUpdate() > 0) return;
+
+        if (validarReserva(cursoId, estudianteId)) return;
+
+        String queryEstado = "SELECT estado_curso FROM Curso WHERE id=?";
+        PreparedStatement psEstado = connection.connect().prepareStatement(queryEstado);
+        psEstado.setInt(1, cursoId);
+        ResultSet rs = psEstado.executeQuery();
+        if (!rs.next()) {
+            throw new IllegalArgumentException(
+                "No existe un curso con id=" + cursoId + ". Use LISCUR[\"*\"] para ver los cursos."
+            );
+        }
+        throw new IllegalStateException(
+            "El curso " + cursoId + " no está disponible para inscripción (estado actual: " +
+            rs.getString("estado_curso") + ")."
+        );
+    }
+
     /** Marca el curso como inscrito (llamado por NInscripcion tras crear la inscripción). */
     public void marcarInscrito(int cursoId) throws SQLException {
         String query =

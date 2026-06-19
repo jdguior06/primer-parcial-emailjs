@@ -32,12 +32,7 @@ public class NInscripcion {
             );
         }
 
-        if (!dCurso.validarReserva(idCurso, idEstudiante)) {
-            throw new IllegalArgumentException(
-                "El curso " + idCurso + " no está reservado por el estudiante " + idEstudiante +
-                ". Use INSRES[\"id_curso\",\"id_estudiante\"] para reservarlo primero."
-            );
-        }
+        dCurso.asegurarReservado(idCurso, idEstudiante);
 
         String[] datos = dInscripcion.guardar(montoTotal, idEstudiante, idPlanPago, idCurso);
         dCurso.marcarInscrito(idCurso);
