@@ -26,27 +26,13 @@ public class DReserva {
      * Retorna los datos del curso reservado para mostrar al estudiante.
      */
     public String[] reservar(int cursoId, int estudianteId) throws SQLException {
-        // Verificar que el estudiante no tenga ya un curso activo
-        String queryActivo =
-            "SELECT COUNT(*) FROM Curso WHERE reservado_por=? AND estado_curso IN ('reservado','inscrito')";
-        PreparedStatement psActivo = connection.connect().prepareStatement(queryActivo);
-        psActivo.setInt(1, estudianteId);
-        ResultSet rsActivo = psActivo.executeQuery();
-        if (rsActivo.next() && rsActivo.getInt(1) > 0) {
-            throw new IllegalStateException(
-                "Ya tienes un curso activo (reservado o inscrito). " +
-                "Use DELRES[\"id_curso\",\"id_estudiante\"] para cancelar la reserva actual."
-            );
-        }
-
         // Actualizar estado: solo si el curso está disponible (manejo de concurrencia)
         String queryUpdate =
-            "UPDATE Curso SET estado_curso='reservado', reservado_por=?, " +
+            "UPDATE Curso SET estado_curso='reservado', " +
             "actualizado_en=CURRENT_TIMESTAMP " +
             "WHERE id=? AND estado_curso='disponible'";
         PreparedStatement psUpdate = connection.connect().prepareStatement(queryUpdate);
-        psUpdate.setInt(1, estudianteId);
-        psUpdate.setInt(2, cursoId);
+        psUpdate.setInt(1, cursoId);
         if (psUpdate.executeUpdate() == 0) {
             // Revisar por qué falló
             String queryEstado = "SELECT estado_curso FROM Curso WHERE id=?";
@@ -102,16 +88,14 @@ public class DReserva {
      */
     public void cancelar(int cursoId, int estudianteId) throws SQLException {
         String query =
-            "UPDATE Curso SET estado_curso='disponible', reservado_por=NULL, " +
+            "UPDATE Curso SET estado_curso='disponible', " +
             "actualizado_en=CURRENT_TIMESTAMP " +
-            "WHERE id=? AND estado_curso='reservado' AND reservado_por=?";
+            "WHERE id=? AND estado_curso='reservado'";
         PreparedStatement ps = connection.connect().prepareStatement(query);
         ps.setInt(1, cursoId);
-        ps.setInt(2, estudianteId);
         if (ps.executeUpdate() == 0) {
             throw new IllegalArgumentException(
-                "No se encontró una reserva activa del estudiante " + estudianteId +
-                " en el curso " + cursoId + ". Verifique los datos con LISCUR[\"*\"]."
+                "El curso " + cursoId + " no tiene una reserva activa. Verifique con LISCUR[\"*\"]."
             );
         }
     }

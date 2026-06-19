@@ -32,7 +32,7 @@ public class NInscripcion {
             );
         }
 
-        dCurso.asegurarReservado(idCurso, idEstudiante);
+        dCurso.asegurarReservado(idCurso);
 
         String[] datos = dInscripcion.guardar(montoTotal, idEstudiante, idPlanPago, idCurso);
         dCurso.marcarInscrito(idCurso);
