@@ -21,8 +21,8 @@ public class DReserva {
     }
 
     /**
-     * Reserva un curso para un estudiante.
-     * Valida que no tenga ya un curso activo (reservado o inscrito).
+     * Reserva un curso (cambia estado a 'reservado').
+     * Solo aplica si el curso está en estado 'disponible'.
      * Retorna los datos del curso reservado para mostrar al estudiante.
      */
     public String[] reservar(int cursoId, int estudianteId) throws SQLException {
