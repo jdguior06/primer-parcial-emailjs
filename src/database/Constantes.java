@@ -11,10 +11,10 @@ public class Constantes {
 
     // Configuración remota
     public static final String USER_REMOTE     = "grupo13sa";
-    public static final String PASSWORD_REMOTE = "grupo13sagrupo13sa";
-    //public static final String PASSWORD_REMOTE = "grup013grup013*";
-    public static final String HOST_REMOTE     = "www.tecnoweb13sa.online";
-    //public static final String HOST_REMOTE     = "www.tecnoweb.org.bo";
+    //public static final String PASSWORD_REMOTE = "grupo13sagrupo13sa";
+    public static final String PASSWORD_REMOTE = "grup013grup013*";
+    //public static final String HOST_REMOTE     = "www.tecnoweb13sa.online";
+    public static final String HOST_REMOTE     = "www.tecnoweb.org.bo";
     public static final String PORT_REMOTE     = "5432";
     public static final String DBNAME_REMOTE   = "db_grupo13sa";
 

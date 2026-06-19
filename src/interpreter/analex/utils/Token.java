@@ -136,7 +136,7 @@ public class Token {
 
     // ── Lexemas de casos de uso ───────────────────────────────────────────────
     public static final String LEXEME_HELP         = "ayuda";
-    public static final String LEXEME_HELP_FLUJO   = "ayuda_administrativa";
+    public static final String LEXEME_HELP_FLUJO   = "ayuda_administrativo";
     public static final String LEXEME_ROL          = "rol";
     public static final String LEXEME_METODOPAGO   = "metodopago";
     public static final String LEXEME_PLANPAGO     = "planpago";

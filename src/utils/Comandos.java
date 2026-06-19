@@ -40,7 +40,7 @@ public class Comandos {
         //LISTA.add(new String[]{"15", "DELTCU", "Eliminar tipo de curso", "id",                        "DELTCU[\"1\"]"});
         // Usuario
         LISTA.add(new String[]{"7", "LISUSU", "Listar usuarios",       "* — muestra: id, nombre, apellido, fecha_nac, genero, documento, correo, telefono, estado, rol", "LISUSU[\"*\"]"});
-        LISTA.add(new String[]{"8", "INSUSU", "Registrar usuario",     "nombre, apellido, fecha_nac (YYYY-MM-DD), genero (M/F), nro_doc, correo, telefono, direccion, pass, rol_id", "INSUSU[\"Juan\",\"Perez\",\"2000-05-15\",\"M\",\"12345678\",\"juan@gmail.com\",\"70000000\",\"Av. Principal\",\"pass123\",\"4\"]"});
+        LISTA.add(new String[]{"8", "INSUSU", "Registrar usuario",     "nombre, apellido, fecha_nac (YYYY-MM-DD), genero (M/F), nro_doc, correo, telefono, direccion, pass, rol_id", "INSUSU[\"Juan\",\"Perez\",\"2000-05-15\",\"M\",\"12345678\",\"juan@gmail.com\",\"70000000\",\"Av. Principal\",\"pass123\",\"3\"]"});
         LISTA.add(new String[]{"9", "MODUSU", "Modificar usuario",     "id, nombre, apellido, fecha_nac (YYYY-MM-DD), genero (M/F), nro_doc, correo, telefono, direccion, estado", "MODUSU[\"1\",\"Juan\",\"Perez\",\"2000-05-15\",\"M\",\"12345678\",\"juan@gmail.com\",\"70000000\",\"Av. Principal\",\"activo\"]"});
         LISTA.add(new String[]{"10", "DELUSU", "Desactivar usuario",    "id",                                                                                       "DELUSU[\"1\"]"});
         // Vehiculo
@@ -79,7 +79,7 @@ public class Comandos {
         LISTA.add(new String[]{"36", "REPPAG", "Reporte pagos por método",                "*", "REPPAG[\"*\"]"});
         // Ayuda
         LISTA.add(new String[]{"37", "AYUDA",   "Ver flujo principal de negocio", "-", "AYUDA"});
-        LISTA.add(new String[]{"38", "AYUDA_ADMINISTRATIVA",  "Ver lista completa de comandos",  "-", "AYUDA_ADMINISTRATIVA"});
+        LISTA.add(new String[]{"38", "AYUDA_ADMINISTRATIVO",  "Ver lista completa de comandos",  "-", "AYUDA_ADMINISTRATIVO"});
     }
 
     public static ArrayList<String[]> listar() {
@@ -100,7 +100,7 @@ public class Comandos {
         FLUJO.add(new String[]{"2",  "INSUSU",
             "Registrar al nuevo estudiante",
             "nombre, apellido, fecha_nac (YYYY-MM-DD), genero (M/F), nro_doc, correo, telefono, direccion, pass, rol_id",
-            "INSUSU[\"Maria\",\"Gonzalez\",\"2000-03-20\",\"F\",\"87654321\",\"estudiante@gmail.com\",\"78000001\",\"Av. Beni 123\",\"pass123\",\"4\"]"});
+            "INSUSU[\"Maria\",\"Gonzalez\",\"2000-03-20\",\"F\",\"87654321\",\"estudiante@gmail.com\",\"78000001\",\"Av. Beni 123\",\"pass123\",\"3\"]"});
         FLUJO.add(new String[]{"3",  "LISUSU",
             "Verificar que el estudiante fue registrado",
             "*",
